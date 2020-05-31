@@ -15,11 +15,15 @@ class TestController extends Controller
 {
     public function welcome($token)
     {
-        $user = User::where([['url_token', $token],['started_at', NULL]])->first();
-        if ($user) {
-            return view('welcome')->with(compact('user'));
+        if (Carbon::now() < Carbon::parse('31-05-2020 06:30 pm')) {
+            $user = User::where([['url_token', $token],['started_at', NULL]])->first();
+            if ($user) {
+                return view('welcome')->with(compact('user'));
+            } else {
+                return abort(403, 'This Link is Expired');
+            }
         } else {
-            return abort(403, 'This Link is Expired');
+            return abort(403, 'We are not Accepting Tests now');
         }
     }
 
@@ -27,13 +31,17 @@ class TestController extends Controller
     public function startTest($token)
     {
         $user = User::where([['url_token', $token],['started_at', NULL]])->first();
-        if ($user) {
-            $user->update(array('started_at'=>Carbon::now()));
-            $questions_options = Question::with('options')->get();
-            return view('test')->with(compact('questions_options'));
-        } else {
-            return abort(403, 'This Link is Expired');
-        } 
+        if (Carbon::now() < Carbon::parse('31-05-2020 06:30 pm')) {
+            if ($user) {
+                $user->update(array('started_at'=>Carbon::now()));
+                $questions_options = Question::with('options')->get();
+                return view('test')->with(compact('questions_options'));
+            } else {
+                return abort(403, 'This Link is Expired');
+            }
+        } else {            
+            return abort(403, 'We are not Accepting Tests now');
+        }
     }
 
     public function submitTest(Request $request)
